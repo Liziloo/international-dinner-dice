@@ -1,145 +1,81 @@
 # Technical Design: International Dinner Dice
 
-## 1. Technology Stack
+## Technology Stack
 
-International Dinner Dice is a client-side web application built with React and TypeScript, using Vite for development and production builds.
+The application uses:
 
-The project uses npm for dependency management, CSS or CSS Modules for styling, Vitest for unit testing, and React Testing Library for interface testing.
+- **React** for the user interface.
+- **TypeScript** for application code and data types.
+- **Vite** for development and production builds.
+- **npm** for dependency management.
+- **CSS or CSS Modules** for styling.
+- **Vitest** and **React Testing Library** for automated testing.
 
-Dependencies are kept minimal to reduce maintenance overhead. The npm lockfile records the resolved dependency versions for reproducible installations.
+Compatible stable dependency versions are used and committed to the npm lockfile. Dependencies are kept minimal.
 
-## 2. Architecture
+## Architecture
 
 The application has three main areas of responsibility:
 
-- **Country data:** A bundled dataset of countries and culinary regions available for assignment.
-- **Application logic:** The rules governing component configuration, country assignment, validation, and state transitions.
-- **User interface and persistence:** The React interface, user interactions, and browser-based storage.
+- **Data:** The bundled country and culinary region dataset.
+- **Application logic:** Assignment, component management, and validation.
+- **Interface and persistence:** React components, user interactions, and browser storage.
 
-Keeping application logic separate from the interface makes assignment behavior easier to test and reduces the amount of business logic embedded in UI components.
+Assignment and validation logic are kept independent of React so they can be tested without rendering the interface.
 
-A possible source layout is:
+The source directory should separate these concerns clearly. The precise file layout is an implementation choice rather than a fixed requirement.
 
-```text
-src/
-  components/
-  data/
-  logic/
-  storage/
-  types/
-  App.tsx
-  main.tsx
-  styles.css
-tests/
-```
+## Data Model
 
-This layout is illustrative rather than prescriptive. The final organization may differ according to the needs of the implementation.
+Each country or culinary region has a stable identifier and a display name.
 
-## 3. Data Model
+Each meal component has a stable identifier, an editable name, and a reference to its assigned country or region. An assignment may temporarily be absent while a component is being initialized, but the application should not present an invalid completed meal state.
 
-The application represents countries or culinary regions, meal components, and persisted application state using TypeScript types.
+Application state contains the configured components and any metadata needed for persistence.
 
-A country or region has a stable identifier and a human-readable display name. A meal component has a stable identifier, a user-editable name, and an assignment referencing a country or region.
+Component identity is independent of its display name, so renaming a component does not affect its assignment or identity.
 
-For example:
+## Assignment Logic
 
-```ts
-type Country = {
-  id: string;
-  name: string;
-};
+Assignment operations are implemented as independently testable functions.
 
-type MealComponent = {
-  id: string;
-  name: string;
-  countryId: string | null;
-};
-```
+- **Roll All:** Selects unique entries for all configured components.
+- **Reroll:** Selects an unused entry other than the component's current assignment, changing no other component.
+- **Add:** Validates the component name and assigns an unused entry.
+- **Rename and reorder:** Modify component configuration without changing assignments.
+- **Remove:** Deletes a component and releases its assignment.
+- **Restore defaults:** Restores the initial component configuration and valid assignments.
 
-The application state contains the configured meal components and any metadata needed to manage persistence.
+Random selection must not depend on a particular ordering of the dataset. If there are insufficient unused entries, the operation must fail gracefully rather than produce duplicate assignments.
 
-Component identity is independent of its display name, allowing users to rename or reorder components without losing their assignments.
+## Dataset
 
-## 4. Assignment and Configuration Logic
+The dataset is stored locally and requires no runtime network requests.
 
-Assignment logic is independent of React and operates on the application data model.
+Its selection criteria are defined in `PRODUCT_SPEC.md`. The implementation should use a documented source, consistent identifiers and names, and a deliberate policy for duplicate or overlapping entries.
 
-### Roll All
+Automated tests validate the actual bundled dataset, including its size, identifier uniqueness, normalized display-name uniqueness, and compatibility with assignment logic.
 
-Roll All assigns a country or region to every configured component. Assignments are unique within the meal, and each invocation replaces the existing assignments.
+## Persistence
 
-A shuffle or sampling-without-replacement algorithm can provide the required uniqueness.
+Browser `localStorage` stores component configuration and assignments.
 
-### Reroll One Component
+Persisted data uses a versioned format to support future changes. On startup, the application parses and validates saved data before using it.
 
-A single-component reroll selects from entries not assigned to other components. The current assignment is excluded when another valid option exists.
+Malformed, incompatible, or invalid state is handled gracefully. If recovery is not possible, the application initializes a valid default configuration. Storage failures should not make the main interface unusable.
 
-Only the selected component changes. If no alternative is available, the existing assignment is preserved and the interface can explain why it did not change.
+## Interface and Styling
 
-### Component Management
+The React interface presents the component list, country or region assignments, assignment controls, and component-management controls.
 
-Adding a component validates its name and assigns an unused country or region. Existing assignments remain unchanged.
+Reusable components should be introduced where they improve clarity and maintainability. Application state changes should remain predictable, and list rendering should use stable component identifiers.
 
-Renaming and reordering affect component presentation but not assignments. Removing a component makes its previous assignment available for later use.
+Plain CSS or CSS Modules provide responsive styling without requiring a UI framework. Accessibility includes semantic controls, keyboard operation, visible focus indicators, and understandable feedback.
 
-Restoring defaults returns the component configuration to its initial state and produces valid, unique assignments.
+## Testing and Build
 
-### Validation
+Vitest covers application logic and edge cases. React Testing Library covers important user interactions and visible behavior.
 
-Validation covers component names, component identifiers, assignment identifiers, and assignment uniqueness. It also accounts for configurations with more components than available countries or regions.
+Tests cover assignment uniqueness, reroll isolation, component management, persistence, invalid data, and error handling. Randomness should be controlled when deterministic test outcomes are necessary.
 
-These checks protect the application from invalid user input and inconsistent persisted state.
-
-## 5. Country and Region Data
-
-The country and region dataset is bundled with the application, so assignment does not depend on an external service or network request.
-
-The dataset is intended to reflect the countries and culinary regions represented in large U.S. international grocery markets. Published country and region guides from Jungle Jim's International Market provide a starting reference for selecting entries.
-
-Each entry has a consistent display name and stable identifier. The dataset avoids duplicate entries caused by alternate spellings or overlapping labels.
-
-The dataset's scope and inclusion criteria are defined in `PRODUCT_SPEC.md`; its completeness and consistency are verified through automated tests.
-
-## 6. Persistence
-
-The application stores its configuration and assignments in the browser's `localStorage`.
-
-Persisted state includes the configured components and their assignments. A version marker allows the application to recognize changes to the saved data format.
-
-When the application starts, it loads and validates stored state before using it. Missing, malformed, or incompatible data is handled gracefully, with a valid default configuration used when recovery is not possible.
-
-Storage errors should not make the main interface unusable. The application requires neither a backend nor a user account.
-
-## 7. User Interface
-
-The React interface presents the configured meal components, their current assignments, and controls for changing them.
-
-The main interactions are Roll All, rerolling an individual component, editing the component list, and restoring defaults.
-
-Reusable interface components may include a component card or list item, component editing controls, a component creation form, and a country or region display.
-
-Application state changes are handled predictably, and stable component identifiers are used for React list keys. User-visible errors and unavailable actions are communicated clearly.
-
-## 8. Styling and Responsive Behavior
-
-The interface uses CSS or CSS Modules rather than requiring a UI framework.
-
-The layout supports both mobile and desktop screens, with particular attention to usability on a phone while shopping. Interactive elements have visible focus indicators, accessible names, and usable target sizes.
-
-Keyboard navigation and accessible feedback are part of the interface design.
-
-## 9. Testing Strategy
-
-Vitest covers application logic, including assignment uniqueness, reroll behavior, component management, validation, and persistence-related logic.
-
-React Testing Library covers user-visible behavior and important interaction workflows.
-
-Tests verify properties of random assignment rather than relying on particular random outcomes. Where necessary, randomness can be controlled to make edge cases reproducible.
-
-The actual bundled country and region dataset is tested for its required size, identifier uniqueness, normalized display-name uniqueness, and valid assignment references.
-
-## 10. Build and Verification
-
-Vite provides the development server and production build. npm scripts expose the project's development, testing, and build workflows.
-
-The project is verified through its automated tests and production build, along with type checking and linting where configured. Verification results are reported based on checks actually executed.
+The project provides npm scripts for development, testing, and production builds. Type checking and linting should also be included where configured. Verification reports must reflect commands actually executed and their observed results.
