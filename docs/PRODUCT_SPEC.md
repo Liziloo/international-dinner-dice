@@ -1,23 +1,14 @@
 # Product Specification: International Dinner Dice
 
-## 1. Purpose
+## Purpose
 
-International Dinner Dice assigns a unique country or culinary region to each component of a meal, providing a playful way to explore an international market.
+International Dinner Dice assigns a unique country or culinary region to each component of a meal, providing a playful way to explore an international grocery market.
 
-The assignment is a shopping prompt, not a recipe recommendation. Users choose their own products, ingredients, and recipes.
+The assignments are shopping prompts, not recipe recommendations. Users choose their own ingredients, products, and recipes. Unexpected combinations are part of the experience.
 
-## 2. Product Principles
+## Default Meal Components
 
-- **Country assignments are random; meal components are not.**
-- Every active component has a different assignment.
-- Users retain control over what they buy and cook.
-- Unexpected combinations are intentional.
-- The app should be straightforward to use while shopping, including on a phone.
-- The core experience must work without accounts, a backend, or external services.
-
-## 3. Meal Components
-
-The initial configuration contains these components:
+The initial configuration contains five components:
 
 - Protein
 - Starch
@@ -25,89 +16,59 @@ The initial configuration contains these components:
 - Beverage
 - Dessert
 
-Users can add, rename, remove, and reorder components.
+Users can add, rename, remove, and reorder components, or restore the default configuration.
 
 Component names must not be empty or duplicate another component's name, ignoring case and surrounding whitespace.
 
-Renaming or reordering a component must preserve its assignment. Removing a component frees its assignment for future use. Adding a component must assign an unused country or region without changing existing assignments.
+## Country and Region Assignments
 
-Users must be able to restore the default component configuration.
+Every active component has one assigned country or culinary region. Assignments must be unique within a meal.
 
-## 4. Country Assignments
+**Roll All** assigns a new set of unique countries or regions to all components, replacing the previous assignments.
 
-Each active component receives exactly one country or culinary region. No two active components may have the same assignment.
+**Reroll** changes the assignment of one component while leaving every other assignment unchanged. The replacement must differ from the previous assignment and must not be used by another component. If no valid alternative exists, the assignment remains unchanged and the user is informed.
 
-### Roll All
+Adding a component assigns it an unused country or region without changing existing assignments. If no assignment is available, the app explains the limitation and does not add an invalid component.
 
-Assign a new country or region to every active component. All assignments must be unique, and existing assignments are replaced.
+Renaming and reordering components preserve their assignments. Removing a component makes its assignment available for subsequent use.
 
-### Reroll One Component
+## Country and Region Dataset
 
-Users can reroll an individual component.
+The app includes a comprehensive local collection of countries and culinary regions that shoppers could realistically encounter in a large U.S. international grocery market.
 
-- Only the selected component's assignment changes.
-- All other assignments remain unchanged.
-- The new assignment cannot already belong to another component.
-- If an unused alternative exists, the new assignment must differ from the previous one.
-- If no valid alternative exists, the existing assignment remains unchanged and the user is informed.
+Published country and region guides from Jungle Jim's International Market are used as a starting reference, prioritizing entries represented by actual international grocery products or identifiable shopping sections rather than attempting to include every country in the world.
 
-### Adding a Component
+The collection offers broad geographic and culinary diversity.
 
-A newly added component receives an unused assignment without changing existing assignments. If no assignment is available, the app explains the limitation and does not create an invalid assignment.
+The dataset is bundled with the application and is available without a network connection.
 
-## 5. Country and Culinary Region Selection
+## Persistence
 
-The app must include a comprehensive, locally available collection of countries and culinary regions that shoppers could realistically encounter in a large U.S. international grocery market.
+The user's component configuration and assignments persist across page refreshes and subsequent visits in the same browser.
 
-Use the published country and region guides for Jungle Jim's International Market as a starting reference. Prioritize entries represented by actual international grocery products or identifiable shopping sections, rather than attempting to include every country in the world.
+If saved data is missing or unusable, the app recovers gracefully and provides a valid default configuration.
 
-The collection should provide broad geographic and culinary diversity, including representation from Africa, Asia, Europe, North America, South America, the Caribbean, and Oceania.
+## User Experience
 
-The collection must be large enough to support substantially more than the five default meal components. It should not be limited to a small list of familiar countries or cuisines.
+The interface clearly displays each component and its assignment, with an obvious Roll All action and an individual reroll control for each component.
 
-Countries and regions must be presented with clear, recognizable names. Distinct culinary regions may be included when they represent meaningful identities in international food retail. Avoid confusing users with duplicate or near-identical entries.
+Users can manage their component list and restore defaults without unnecessary complexity.
 
-The app must not require an internet connection to obtain assignments.
+The application is responsive and usable on phones, tablets, and desktop computers. Interactive controls are keyboard-accessible, have clear labels and visible focus indicators, and communicate errors or limitations in text.
 
-## 6. Persistence
+## Out of Scope
 
-Users' component configurations and valid country or region assignments must survive page refreshes and subsequent visits in the same browser.
-
-Users should not have to recreate their component list every time they open the app.
-
-If saved information is missing or unusable, the app must recover gracefully and provide a valid default configuration rather than leaving the application unusable.
-
-## 7. User Interface and Accessibility
-
-The interface must:
-
-- Clearly display each component and its assigned country or region.
-- Provide an obvious Roll All action.
-- Provide a reroll action for each component.
-- Allow users to add, rename, remove, and reorder components.
-- Provide a way to restore the default configuration.
-- Explain when an assignment cannot be changed because no alternative is available.
-- Remain usable on both mobile and desktop screens.
-- Support keyboard navigation and provide visible focus indicators.
-- Use clear labels for interactive controls.
-- Communicate errors and important action results in text, not color alone.
-
-The interface should remain practical on a small phone screen while shopping.
-
-## 8. Out of Scope
-
-The app must not:
+The application does not:
 
 - Choose recipes or dishes.
 - Recommend ingredients, brands, or specific products.
 - Attempt to make assignments fit a coherent cuisine or meal.
-- Require user accounts.
-- Depend on a backend or external API.
+- Require user accounts, a backend, or external APIs.
 - Require location tracking.
-- Add social networking, shopping-cart, or unrelated meal-planning features.
+- Include social networking, shopping carts, or unrelated meal-planning features.
 
-## 9. Success Criteria
+## Success Criteria
 
-A user can open the app, receive unique country or region assignments, reroll one assignment without disturbing the others, customize meal components, refresh the page without losing valid saved configuration, and use the interface comfortably on a phone.
+A user can open the app, receive unique country or region assignments, reroll one assignment without disturbing the others, customize meal components, and return later without losing valid saved configuration.
 
-The resulting assignments provide useful prompts for exploring an international grocery market while leaving all food and recipe decisions to the user.
+The result is a practical, playful prompt for exploring an international grocery market, with food and recipe decisions left entirely to the user.
