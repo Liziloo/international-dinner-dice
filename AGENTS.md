@@ -31,6 +31,8 @@ In particular:
 
 Do not introduce recipe recommendations, ingredient selection, backend services, external APIs, accounts, or unrelated features.
 
+Use `docs/research/jungle-jims-international-list.md` as the source list for the initial dataset. This file contains the country and regional names transcribed from Jungle Jim’s official International Department page. Do not search for or download additional guides. Preserve every listed entry, including regions and territories. The source list is research input, not the finished application dataset; normalize and validate the bundled dataset as needed. The application must work offline.
+
 ## Engineering
 
 - Use the documented React, TypeScript, Vite, npm, Vitest, and React Testing Library stack unless the repository already has a justified compatible setup.
